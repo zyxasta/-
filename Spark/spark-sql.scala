@@ -50,11 +50,10 @@ val sc =spark.sparkContext
 val arr = Array(("Jack", 28, 184), ("Tom", 10, 144), ("Andy",
   16, 165))
 val rdd1 = sc.makeRDD(arr).map(f=>Row(f._1, f._2, f._3))
-val schema = StructType( StructField("name", StringType,
-  false) ::
-  StructField("age", IntegerType, false) ::
-  StructField("height", IntegerType, false) ::
-  Nil)
+val schema = StructType( StructField("name", StringType,false) ::
+                         StructField("age", IntegerType, false) ::
+                         StructField("height", IntegerType, false) ::
+                         Nil)
 val schema1 = (new StructType).
   add("name", "string", false).
   add("age", "int", false).
@@ -66,39 +65,30 @@ rddToDF.orderBy(desc("name")).show(false)
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 val arr1 = Array(("Jack", 28, null), ("Tom", 10, 144),
-  ("Andy", 16, 165))
+                 ("Andy", 16, 165))
 val rdd1 = sc.makeRDD(arr1).map(f=>Row(f._1, f._2, f._3))
-val structType = StructType(StructField("name", StringType,
-  false) ::
-  StructField("age", IntegerType,
-    false) ::
-  StructField("height", IntegerType,
-    false) :: Nil)
+val structType = StructType(StructField("name", StringType,false) ::
+                            StructField("age", IntegerType,false) ::
+                            StructField("height", IntegerType,false) :: Nil)
 // false 说明字段不能为空 
 val schema1 = structType
 val df1 = spark.createDataFrame(rdd1, schema1)
 // 下一句执行报错(因为有空字段) 
 df1.show
 // true 允许该字段为空，语句可以正常执行 
-val schema2 = StructType( StructField("name", StringType,
-  false) ::
-  StructField("age", IntegerType,
-    false) ::
-  StructField("height", IntegerType,
-    true) :: Nil)
+val schema2 = StructType( StructField("name", StringType, false) ::
+                          StructField("age", IntegerType,false) ::
+                          StructField("height", IntegerType,true) :: Nil)
 val df2 = spark.createDataFrame(rdd1, schema2)
 df2.show
+
 // IDEA中需要，spark-shell中不需要 
 import spark.implicits._
-val arr2 = Array(("Jack", 28, 150), ("Tom", 10, 144), ("Andy",
-  16, 165))
+val arr2 = Array(("Jack", 28, 150), ("Tom", 10, 144), ("Andy",16, 165))
 val rddToDF = sc.makeRDD(arr2).toDF("name", "age", "height")
 case class Person(name:String, age:Int, height:Int)
-val arr2 = Array(("Jack", 28, 150), ("Tom", 10, 144), ("Andy",
-  16, 165))
-val rdd2: RDD[Person] =
-  spark.sparkContext.makeRDD(arr2).map(f=>Person(f._1, f._2,
-    f._3))
+val arr2 = Array(("Jack", 28, 150), ("Tom", 10, 144), ("Andy",16, 165))
+val rdd2: RDD[Person] =spark.sparkContext.makeRDD(arr2).map(f=>Person(f._1, f._2,f._3))
 val ds2 = rdd2.toDS() // 反射推断，spark 通过反射从case 
 // class的定义得到类名
 val df2 = rdd2.toDF() // 反射推断 
@@ -124,18 +114,16 @@ df2.show()
 // 指定参数 
 // spark 2.3.0 
 val schema = "name string, age int, job string"
-val df3 = spark.read
-  .options(Map(("delimiter", ";"), ("header", "true")))
-  .schema(schema)
-  .csv("data/people2.csv")
+val df3 = spark.read.options(Map(("delimiter", ";"), ("header", "true")))
+                    .schema(schema)
+                    .csv("data/people2.csv")
 df3.printSchema()
 df3.show
 // 自动类型推断 
-val df4 = spark.read
-  .option("delimiter", ";")
-  .option("header", "true")
-  .option("inferschema", "true")
-  .csv("data/people2.csv")
+val df4 = spark.read.option("delimiter", ";")
+                    .option("header", "true")
+                    .option("inferschema", "true")
+                    .csv("data/people2.csv")
 df4.printSchema()
 df4.show
 
@@ -242,10 +230,9 @@ val df1 = spark.sql("select * from ds_spark.people")
 val df2 = spark.table("ds_spark.people")
 
 ////Action操作
-val df1 = spark.read.
-  option("header", "true").
-  option("inferschema","true").
-  csv("src/main/resources/emp.csv")
+val df1 = spark.read.option("header", "true").
+                    .option("inferschema","true")
+                    .csv("src/main/resources/emp.csv")
 df1.count
 // 缺省显示20行
 df1.union(df1).show()
@@ -328,12 +315,10 @@ df1.select("ename", "hiredate", "sal+100").show
 df1.select($"ename", $"hiredate", $"sal"+100).show
 df1.select('ename, 'hiredate, 'sal+100).show
 // 可使用expr表达式(expr里面只能使用引号) 
-df1.select(expr("comm+100"), expr("sal+100"),
-  expr("ename")).show
+df1.select(expr("comm+100"), expr("sal+100"),expr("ename")).show
 df1.selectExpr("ename as name").show
 df1.selectExpr("power(sal, 2)", "sal").show
-df1.selectExpr("round(sal, -3) as newsal", "sal",
-  "ename").show
+df1.selectExpr("round(sal, -3) as newsal", "sal","ename").show
 // drop、withColumn、 withColumnRenamed、casting 
 // drop 删除一个或多个列，得到新的DF 
 df1.drop("mgr")
