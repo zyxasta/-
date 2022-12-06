@@ -74,7 +74,7 @@ val arr2 = Array(("Jack", 28, 150), ("Tom", 10, 144), ("Andy",16, 165))
 val rddToDF = sc.makeRDD(arr2).toDF("name", "age", "height")
 case class Person(name:String, age:Int, height:Int)
 val arr2 = Array(("Jack", 28, 150), ("Tom", 10, 144), ("Andy",16, 165))
-val rdd2: RDD[Person] =spark.sparkContext.makeRDD(arr2).map(f=>Person(f._1, f._2,f._3))
+val rdd2 =spark.sparkContext.makeRDD(arr2).map(f=>Person(f._1, f._2,f._3))
 val ds2 = rdd2.toDS() // 反射推断，spark 通过反射从case 
 // class的定义得到类名
 val df2 = rdd2.toDF() // 反射推断 
@@ -91,12 +91,10 @@ ds3.show(10)
 
 
 ////从文件创建DateFrame(以csv文件为例) 
-val df1 = spark.read.csv("data/people1.csv")
+val df1 = spark.read.csv("data/people1.csv") //hdfs://nameservicezzj/user/edw/data/people1.csv
 df1.printSchema()
 df1.show()
-val df2 = spark.read.csv("data/people2.csv")
-df2.printSchema()
-df2.show()
+
 // 指定参数 
 // spark 2.3.0 
 val schema = "name string, age int, job string"
@@ -105,6 +103,7 @@ val df3 = spark.read.options(Map(("delimiter", ";"), ("header", "true")))
                     .csv("data/people2.csv")
 df3.printSchema()
 df3.show
+
 // 自动类型推断 
 val df4 = spark.read.option("delimiter", ";")
                     .option("header", "true")
@@ -156,7 +155,7 @@ spark.newSession().sql("SELECT * FROM global_temp.people").show()
 
 ////创建表 有管理表和无管理表
 spark.sql("create database ds_spark")
-spark.sql("show databases").show(100,false)
+spark.sql("show databases").show(100,false)  //false 左对其，true为右对其
 spark.sql("use ds_spark")
 spark.sql(
   s"""
@@ -193,6 +192,7 @@ spark.sql(
     |create or replace  temp view people_view2
     |as select * from ds_spark.people
     |""".stripMargin)
+
 //查询全局视图，需要加上 global_temp 前缀
 spark.sql("select * from global_temp.people_view").show(10,false)
 //查询临时视图
@@ -205,6 +205,7 @@ spark.sql("drop view if exists people_view2")
 spark.catalog.listDatabases()
 spark.catalog.listTables()
 spark.catalog.listColumns("ds_spark.people")
+spark.catalog.listFunctions.show(10000, false)
 
 ////缓存SQL表
 //缓存表
@@ -229,6 +230,7 @@ df1.toJSON.show(false)
 // 显示10行，不截断字符
 df1.toJSON.show(10, false)
 spark.catalog.listFunctions.show(10000, false)
+
 // collect返回的是数组, Array[org.apache.spark.sql.Row]
 val c1 = df1.collect()
 // collectAsList返回的是List, List[org.apache.spark.sql.Row]
@@ -291,7 +293,7 @@ spark.catalog.uncacheTable("t1")
 // 注意:不要混用；必要时使用spark.implicitis._；并非每个表示在所有的地方都有效
 df1.select($"ename", $"hiredate", $"sal").show
 df1.select("ename", "hiredate", "sal").show
-df1.select('ename, 'hiredate, 'sal).show
+df1.select('ename, 'hiredate, 'sal).show     ???spark 2.4不行
 df1.select(col("ename"), col("hiredate"), col("sal")).show
 df1.select(df1("ename"), df1("hiredate"), df1("sal")).show
 // 下面的写法无效，其他列的表示法有效 
@@ -302,6 +304,7 @@ df1.select($"ename", $"hiredate", $"sal"+100).show
 df1.select('ename, 'hiredate, 'sal+100).show
 // 可使用expr表达式(expr里面只能使用引号) 
 df1.select(expr("comm+100"), expr("sal+100"),expr("ename")).show
+//selectExpr里面字段没有双引号
 df1.selectExpr("ename as name").show
 df1.selectExpr("power(sal, 2)", "sal").show
 df1.selectExpr("round(sal, -3) as newsal", "sal","ename").show
@@ -318,7 +321,7 @@ df1.withColumnRenamed("sal", "newsal")
 // cast，类型转换 
 df1.selectExpr("cast(empno as string)").printSchema
 import org.apache.spark.sql.types._
-df1.select('empno.cast(StringType)).printSchema
+df1.select($"empno".cast(StringType)).printSchema
 
 // where操作
 df1.filter("sal>1000").show
@@ -339,27 +342,25 @@ df1.groupBy("Job").avg("sal").where($"avg(sal)" > 2000).show
 df1.groupBy("Job").agg("sal"->"max", "sal"->"min", "sal"->"avg", "sal"->"sum", "sal"->"count").show
 df1.groupBy("deptno").agg("sal"->"max", "sal"->"min", "sal"->"avg", "sal"->"sum", "sal"->"count").show
 // 这种方式更好理解
-df1.groupBy("Job").agg(max("sal"), min("sal"), avg("sal"),
-  sum("sal"), count("sal")).show
+df1.groupBy("Job").agg(max("sal"), min("sal"), avg("sal"),sum("sal"), count("sal")).show
 // 给列取别名 withColumnRenamed
-df1.groupBy("Job").agg(max("sal"), min("sal"), avg("sal"),
-  sum("sal"), count("sal")).withColumnRenamed("min(sal)",
-  "min1").show
+df1.groupBy("Job").agg(max("sal"), min("sal"), avg("sal"),sum("sal"), count("sal"))
+                  .withColumnRenamed("min(sal)","min1").show
 // 给列取别名，最简便 .as()
 df1.groupBy("Job").agg(max("sal").as("max1"),
-  min("sal").as("min2"), avg("sal").as("avg3"),
-  sum("sal").as("sum4"), count("sal").as("count5")).show
+                       min("sal").as("min2"), avg("sal").as("avg3"),
+                       sum("sal").as("sum4"), count("sal").as("count5")).show
 
-// orderBy 
+// orderBy  从小到大
 df1.orderBy("sal").show
 df1.orderBy($"sal").show
 df1.orderBy($"sal".asc).show
-// 降序 
-df1.orderBy(-$"sal").show
+// 降序  从大到小
+df1.orderBy(-$"sal").show   //-$
 df1.orderBy('sal).show
 df1.orderBy(col("sal")).show
 df1.orderBy(df1("sal")).show
-df1.orderBy($"sal".desc).show
+df1.orderBy($"sal".desc).show  //desc
 df1.orderBy(-'sal).show
 df1.orderBy(-'deptno, -'sal).show
 // sort，以下语句等价 
