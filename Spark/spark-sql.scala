@@ -363,7 +363,7 @@ df1.orderBy(df1("sal")).show
 df1.orderBy($"sal".desc).show  //desc
 df1.orderBy(-'sal).show
 df1.orderBy(-'deptno, -'sal).show
-// sort，以下语句等价 
+// sort，以下语句等价  orderby 全局排序， sortby  在各自reduce中有序
 df1.sort("sal").show
 df1.sort($"sal").show
 df1.sort($"sal".asc).show
@@ -393,7 +393,7 @@ val rdd = sc.makeRDD(List(StudentHeight("Alice", 160),
   StudentHeight("Andy", 159), StudentHeight("Bob", 170),
   StudentHeight("Cindy", 165), StudentHeight("Rose", 160)))
 val ds2 = rdd.toDS
-// 备注:不能使用双引号，而且这里是 === 
+// 备注:不能使用双引号，而且这里是 === 关联字段名字相同会报错，可用下面的 ds1("sname")===ds2("sname")
 ds1.join(ds2, $"name"===$"sname").show
 ds1.join(ds2, 'name==='sname).show
 
@@ -418,13 +418,15 @@ ds3.union(ds4).show
 // unionAll、union 等价；unionAll过期方法，不建议使用 
 ds3.unionAll(ds4).show
 // intersect 求交 
+//Returns a new Dataset containing rows only in both this Dataset and another Dataset.
+// This is equivalent to INTERSECT in SQL.
 ds3.intersect(ds4).show
 // except 求差 
 ds3.except(ds4).show
 
 // NaN (Not a Number) 
-math.sqrt(-1.0)
-math.sqrt(-1.0).isNaN()
+math.sqrt(-1.0)  //NaN
+math.sqrt(-1.0).isNaN() //true
 df1.show
 // 删除所有列的空值和NaN 
 df1.na.drop.show
@@ -435,8 +437,7 @@ df1.na.fill(1000).show
 df1.na.fill(1000, Array("comm")).show
 df1.na.fill(Map("mgr"->2000, "comm"->1000)).show
 // 对指定的值进行替换 
-df1.na.replace("comm" :: "deptno" :: Nil, Map(0 -> 100, 10 ->
-  100)).show
+df1.na.replace("comm" :: "deptno" :: Nil, Map(0 -> 100, 10 ->100)).show
 // 查询空值列或非空值列。isNull、isNotNull为内置函数 
 df1.filter("comm is null").show
 df1.filter($"comm".isNull).show
@@ -446,7 +447,7 @@ df1.filter(col("comm").isNotNull).show
 
 ////load和save操作
 
-val df = spark.read.load("users.parquet")
+val df = spark.read.load("users.parquet")    //hdfs://nameservicezzj/user/edw/users.parquet
 df.select("name", "age").write.save("namesAndAges.parquet")
 
 val df = spark.read.format("json").load("people.json")
@@ -468,7 +469,7 @@ df.write.format("parquet").mode("overwrite")
                           .option("compression", "snappy")
                           .save("data/parquet")
 
-//自动分区推断
+//自动分区推断 数字类型和字符串类型
 spark.read.json("./data/game/raw/user_login/json").write.parquet("./data/eg/parquet/1/dt=20220401")
 spark.read.json("./data/game/raw/user_login/json").write.parquet("./data/eg/parquet/1/dt=20220402")
 spark.read.parquet("./data/eg/parquet/1/").printSchema()
