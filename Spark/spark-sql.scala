@@ -1,21 +1,24 @@
 
 ////由range生成Dataset
+//spark.range(5, 100, 5)  5 10 15 20.........95
+//numDS :DataSet[Long]
 val numDS = spark.range(5, 100, 5)
-// orderBy 转换操作；desc：function；show：Action 
+// orderBy 转换操作；desc:function；show:Action 
 numDS.orderBy(desc("id")).show(5)
-// 统计信息 
+// 统计信息： 返回count mean stddev min max信息
 numDS.describe().show
 // 显示schema信息 
 numDS.printSchema
 // 使用RDD执行同样的操作 
 numDS.rdd.map(_.toInt).stats
 // 检查分区数 
-numDS.rdd.getNumPartitions
+numDS.rdd.getNumPartitions //res7:Int = 2
 
 ////集合生成Dataset
 case class Person(name: String, age: Int, height: Int)
 // 注意 Seq 中元素的类型 
 val seq1 = Seq(Person("Jack", 28, 184), Person("Tom", 10, 144), Person("Andy", 16, 165))
+dataset[Person]
 val ds1 = spark.createDataset(seq1)
 // 显示schema信息 
 ds1.printSchema
@@ -50,7 +53,7 @@ val sc =spark.sparkContext
 val arr = Array(("Jack", 28, 184), ("Tom", 10, 144), ("Andy",
   16, 165))
 val rdd1 = sc.makeRDD(arr).map(f=>Row(f._1, f._2, f._3))
-val schema = StructType( StructField("name", StringType,false) ::
+val schema = StructType( StructField("name", StringType,false) ::  //false是否允许为空 true 可以为空
                          StructField("age", IntegerType, false) ::
                          StructField("height", IntegerType, false) ::
                          Nil)
@@ -62,25 +65,8 @@ val schema1 = (new StructType).
 val rddToDF = spark.createDataFrame(rdd1, schema)
 rddToDF.orderBy(desc("name")).show(false)
 
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types._
-val arr1 = Array(("Jack", 28, null), ("Tom", 10, 144),
-                 ("Andy", 16, 165))
-val rdd1 = sc.makeRDD(arr1).map(f=>Row(f._1, f._2, f._3))
-val structType = StructType(StructField("name", StringType,false) ::
-                            StructField("age", IntegerType,false) ::
-                            StructField("height", IntegerType,false) :: Nil)
-// false 说明字段不能为空 
-val schema1 = structType
-val df1 = spark.createDataFrame(rdd1, schema1)
-// 下一句执行报错(因为有空字段) 
-df1.show
-// true 允许该字段为空，语句可以正常执行 
-val schema2 = StructType( StructField("name", StringType, false) ::
-                          StructField("age", IntegerType,false) ::
-                          StructField("height", IntegerType,true) :: Nil)
-val df2 = spark.createDataFrame(rdd1, schema2)
-df2.show
+
+
 
 // IDEA中需要，spark-shell中不需要 
 import spark.implicits._
@@ -302,7 +288,7 @@ spark.catalog.cacheTable("t1")
 spark.catalog.uncacheTable("t1")
 
 // 列的多种表示方法。使用""、$""、'、col()、ds("") 
-// 注意：不要混用；必要时使用spark.implicitis._；并非每个表示在所有的地方都有效
+// 注意:不要混用；必要时使用spark.implicitis._；并非每个表示在所有的地方都有效
 df1.select($"ename", $"hiredate", $"sal").show
 df1.select("ename", "hiredate", "sal").show
 df1.select('ename, 'hiredate, 'sal).show
@@ -328,7 +314,7 @@ val df2 = df1.withColumn("sal", $"sal"+1000)
 df2.show
 // withColumnRenamed，更改列名 
 df1.withColumnRenamed("sal", "newsal")
-// 备注：drop、withColumn、withColumnRenamed返回的是DF 
+// 备注:drop、withColumn、withColumnRenamed返回的是DF 
 // cast，类型转换 
 df1.selectExpr("cast(empno as string)").printSchema
 import org.apache.spark.sql.types._
@@ -349,17 +335,17 @@ df1.groupBy("Job").count.show
 // 类似having子句
 df1.groupBy("Job").avg("sal").where("avg(sal) > 2000").show
 df1.groupBy("Job").avg("sal").where($"avg(sal)" > 2000).show
-// agg
+// agg agg可以使我们同时获取多个聚合运算结果
 df1.groupBy("Job").agg("sal"->"max", "sal"->"min", "sal"->"avg", "sal"->"sum", "sal"->"count").show
 df1.groupBy("deptno").agg("sal"->"max", "sal"->"min", "sal"->"avg", "sal"->"sum", "sal"->"count").show
 // 这种方式更好理解
 df1.groupBy("Job").agg(max("sal"), min("sal"), avg("sal"),
   sum("sal"), count("sal")).show
-// 给列取别名
+// 给列取别名 withColumnRenamed
 df1.groupBy("Job").agg(max("sal"), min("sal"), avg("sal"),
   sum("sal"), count("sal")).withColumnRenamed("min(sal)",
   "min1").show
-// 给列取别名，最简便
+// 给列取别名，最简便 .as()
 df1.groupBy("Job").agg(max("sal").as("max1"),
   min("sal").as("min2"), avg("sal").as("avg3"),
   sum("sal").as("sum4"), count("sal").as("count5")).show
@@ -395,9 +381,9 @@ df1.join(df1, "empno").count
 df1.join(df1, Seq("empno", "ename")).show
 // 定义第一个数据集 
 case class StudentAge(sno: Int, name: String, age: Int)
-val lst = List(StudentAge(1,"Alice", 18), StudentAge(2,"Andy",
-  19), StudentAge(3,"Bob", 17), StudentAge(4,"Justin", 21),
-  StudentAge(5,"Cindy", 20))
+val lst = List(StudentAge(1,"Alice", 18), StudentAge(2,"Andy",19), 
+               StudentAge(3,"Bob", 17), StudentAge(4,"Justin", 21),
+               StudentAge(5,"Cindy", 20))
 val ds1 = spark.createDataset(lst)
 ds1.show()
 // 定义第二个数据集 
@@ -406,7 +392,7 @@ val rdd = sc.makeRDD(List(StudentHeight("Alice", 160),
   StudentHeight("Andy", 159), StudentHeight("Bob", 170),
   StudentHeight("Cindy", 165), StudentHeight("Rose", 160)))
 val ds2 = rdd.toDS
-// 备注：不能使用双引号，而且这里是 === 
+// 备注:不能使用双引号，而且这里是 === 
 ds1.join(ds2, $"name"===$"sname").show
 ds1.join(ds2, 'name==='sname).show
 
@@ -477,10 +463,9 @@ spark.sql(
     |""".stripMargin
 )
 spark.sql("select * from users").show
-df.write.format("parquet")
-  .mode("overwrite")
-  .option("compression", "snappy")
-  .save("data/parquet")
+df.write.format("parquet").mode("overwrite")
+                          .option("compression", "snappy")
+                          .save("data/parquet")
 
 //自动分区推断
 spark.read.json("./data/game/raw/user_login/json").write.parquet("./data/eg/parquet/1/dt=20220401")
@@ -512,17 +497,16 @@ spark.read.option("mergeSchema","true").parquet("./data/eg/parquet/2").printSche
 
 
 // orc 写入
-  spark.read.json("./data/game/raw/user_login/json")
-    .write.orc("./data/orc/raw/1/")
+spark.read.json("./data/game/raw/user_login/json").write.orc("./data/orc/raw/1/")
  // orc读取
-  spark.read.orc("./data/orc/raw/1/").show(10,false)
+spark.read.orc("./data/orc/raw/1/").show(10,false)
 
   // orc 是否也可以自动分区推断？
-  spark.read.orc("./data/orc/raw/1/").limit(10)
+spark.read.orc("./data/orc/raw/1/").limit(10)
     .write.orc("./data/orc/raw/2/dt=20220401")
-  spark.read.orc("./data/orc/raw/1/").limit(10)
+spark.read.orc("./data/orc/raw/1/").limit(10)
     .write.orc("./data/orc/raw/2/dt=20220402")
-  spark.read.orc("./data/orc/raw/2/").printSchema()
+spark.read.orc("./data/orc/raw/2/").printSchema()
 //  root
 //    ...
 //  |-- dt: integer (nullable = true)
@@ -583,7 +567,7 @@ spark.read.table("ds_spark.ods_user_login").count()
 val df= spark.read.json("user_log.json")
 // 会发现整个表的分区都被覆盖
 df.write.partitionBy("dt_pt").saveAsTable("ds_spark.ods_user_login_di")
-插入动态分区：insertInto 
+插入动态分区:insertInto 
 spark.sql("set spark.sql.sources.partitionOverwriteMode = 'DYNAMIC' ")
 df.write.mode("overwrite").insertInto("ds_spark.ods_user_login_di")
 5.1.4 saveAstable 和 insertInto 企业中怎么用？
@@ -673,7 +657,7 @@ jdbcDF.write
 
 
 内置函数案例实战☆☆☆
-官网：https://spark.apache.org/docs/latest/api/sql/index.html
+官网:https://spark.apache.org/docs/latest/api/sql/index.html
 
 // 日期格式化
 spark.sql("select to_date('20220401','yyyyMMdd')").show()
