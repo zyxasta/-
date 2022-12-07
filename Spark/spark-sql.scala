@@ -662,7 +662,7 @@ jdbcDF.write
 官网:https://spark.apache.org/docs/latest/api/sql/index.html
 
 // 日期格式化
-spark.sql("select to_date('20220401','yyyyMMdd')").show()
+spark.sql("select  ('20220401','yyyyMMdd')").show()
 //date_format(timestamp, fmt) - Converts timestamp to a value of string in the format specified by the date format fmt.
 spark.sql("SELECT date_format('2016-04-08', 'y')")
 // date_add(start_date, num_days) - Returns the date that is num_days after start_date.
@@ -678,7 +678,8 @@ spark.sql("  SELECT from_utc_timestamp('2016-08-31', 'Asia/Seoul');")
 // last_day(date) - Returns the last day of the month which the date belongs to.
 spark.sql("SELECT last_day('2009-01-12')")
 
-// explode(expr) - Separates the elements of array expr into multiple rows, or the elements of map expr into multiple rows and columns.
+// explode(expr) - Separates the elements of array expr into multiple rows, 
+//or the elements of map expr into multiple rows and columns.
 spark.sql("SELECT explode(array(10, 20))")
 // from_json(jsonStr, schema[, options]) - Returns a struct value with the given jsonStr and schema.
 spark.sql("SELECT from_json('{\"a\":1, \"b\":0.8}', 'a INT, b DOUBLE')")
@@ -753,12 +754,12 @@ spark.sparkContext.makeRDD(List(
 //窗口函数语法
 spark.sql(
   """
-    |select id,name,age,salary,dept_id,sex, max(salary) over(partition by dept_id) as dept_max_salary from t_user
+    |select id,name,age,salary,dept_id,sex, max(salary) over(partition by dept_id) as dept_max_salary 
+    from t_user
     |""".stripMargin)
 
 import spark.implicits._
-spark
-  .sparkContext
+spark.sparkContext
   .makeRDD(
     List(
       ("2018-01-01", 1, "www.baidu.com", "10:01"),
@@ -772,7 +773,10 @@ spark
   .toDF("day", "user_id", "page_id", "time")
   .createOrReplaceTempView("t_page")
 
-spark.sql("select * from (select user_id,page_id,num,rank() over(partition by user_id order by num desc) as rank from (select user_id,page_id,count(page_id) as num from t_page group by user_id,page_id)) where rank < 10")
+spark.sql("select * from (select user_id,page_id,num,
+rank() over(partition by user_id order by num desc) as rank 
+from (select user_id,page_id,count(page_id) as num 
+from t_page group by user_id,page_id)) where rank < 10")
 
 
 ////udf
