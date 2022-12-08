@@ -1,36 +1,12 @@
 
 
 
-Spark的组件
-A.DAGScheduler
-C.TaskScheduler
-D.SparkContext
-
- 
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11.在RDD行动算子中,用于返回数组的第一个元素的行动算子为()
-A、first()
 
 
 12.在Spark2.0 版本之前,Spark SQL中创建DataFrame和执行SQL的入口是()
@@ -49,32 +25,12 @@ A、select()
 
 
 
-//Stage
-4.Stage 的 Task 的数量由什么决定
-A.Partition
-
-6.简述Spark Stage 的划分原理
-Job->Stage->Task
-开发完一个应用以后,把这个应用提交到Spark集群,这个应用叫Application。
-这个应用里面开发了很多代码,这些代码里面凡是遇到一个action操作,就会产生一个job任务。
-一个Application有一个或多个job任务。job任务被DAGScheduler划分为不同stage去执行,stage是一组Task任务。
-Task分别计算每个分区partition上的数据,Task数量=分区partition数量。
-
-Spark如何划分Stage:
-会从执行action的最后一个RDD开始向前推,首先为最后一个RDD创建一个stage,
-向前遇到某个RDD是宽依赖,再划分一个stage。如下图,从宽依赖处划分为2个stage。
-原理的应用场景:
-1.通过监控界面上每个stage及其内部task运行情况,找到对应的代码段做性能调优。
-2.指定RDD的分区数参数,实际也调整了task的数量,在数据量较大时适当调整增加并行度。
 
 
-3. Task 运行在下来哪里个选项中 Executor 上的工作单元
-C. worker node
 
-16. Spark driver的功能是什么
-A. 是作业的主进程
-B. 负责了作业的调度
-D. 负责作业的解析
+
+
+
 
 17. SparkContext可以从哪些位置读取数据
 A.本地磁盘
@@ -88,51 +44,6 @@ C. spark.read.format("json").load("people.json")
 20. 从RDD转换得到DataFrame包含两种典型的方法,分别是
 A.利用反射机制推断RDD模式
 B.使用编程方式定义RDD模式
-
-
-
-
-2.请列举Spark的action算子,并简述功能(5个以上)
-1.collect  :  将数据从各个Executor节点中收集到Driver端
-2.foreach : 分布式遍历RDD中数据
-3.count : 统计数RDD中据个数
-4.take :显示前N个RDD的元素
-5.saveAsTextFile : 将RDD数据保存到集群或者本地,文件格式为txt格式。
-6.reduce :指定聚合逻辑,对RDD所有元素进行聚合操作
-7.aggregare : 分别指定分区内与分区间聚合逻辑,对RDD所有元素进行聚合操作
-8. countByKey : 统计RDD中所有Key出现的次数
-9.countByvalue : 统计RDD中各个元素值出现的次数。
-
-3.Repartition和Coalesce关系与区别
-repartition和coalesce两个都是对RDD的分区进行重新划分,
-repartition只是coalesce接口中shuffle为true的简易实现。
-假设RDD有N个分区,需要重新划分成M个分区,有以下几种情况
-1.N小于M
-一般情况下,N个分区有数据分布不均匀的状况,利用hashPartitioner函数将数据重新分区为M个,
-这时需要将shuffle设置为true。
-2.N大于M且和M相差不多
-假如N是1000,M是100,那么久可以将N个分区中的若干个分区合并成一个新的分区,
-最终合并为M个分区,这时可以将shuffle设置为false,在shuffle为false的情况下,
-如果M>N时,coalesce为无效的,不进行shuffle过程,父RDD和子RDD之间是窄依赖关系。
-3.N大于M且和M相差悬殊
-这时如果将shuffle设置为false,父子RDD是窄依赖关系,他们同处在一个stage中,
-就可能造成spark程序的并行度不够,从而影响性能,如果在M为1的时候,
-为了时coalesce之前的操作有更好的并行度,可以将shuffle设置为true。
-总之,如果shuffle为false时,如果传入的参数大于现有的分区数目,RDD的分区数不变,
-就是说不经过shuffle,是无法将RDD的分区数变多的。
-
-
-4.map和mappartitions的区别
-1、数据处理角度
-Map 算子是分区内一个数据一个数据的执行,类似于串行操作。而 mapPartitions 算子是以分区为单位进行批处理操作。
-2、 功能的角度
-Map 算子主要目的将数据源中的数据进行转换和改变。但是不会减少或增多数据。
-MapPartitions 算子需要传递一个迭代器,返回一个迭代器,没有要求的元素的个数保持不变,所以可以增加或减少数据。
-3、性能的角度
-Map 算子因为类似于串行操作,所以性能比较低,而是 mapPartitions 算子类似于批处理,所以性能较高。
-但是 mapPartitions 算子会长时间占用内存,那么这样会导致内存可能不够用,出现内存溢出的错误。所以在内存有限的情况下,不推荐使用 mapPartitions,可使用 map 操作。
-
-
 
 
 

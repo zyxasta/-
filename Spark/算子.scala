@@ -1,3 +1,18 @@
+////
+窄转化/窄依赖(Narrow Dependency):指父RDD的每个分区只被子RDD的一个分区所使用,
+例如map、filter等这些算子 一个RDD,对它的父RDD只有简单的一对一的关系,
+RDD的每个partition仅仅依赖于父RDD 中的一个partition,
+父RDD和子RDD的partition之间的对应关系,是一对一的。
+
+宽转化/(Shuffle Dependency):父RDD的每个分区都可能被子RDD的多个分区使用,
+例如groupByKey、 reduceByKey,sortBykey等算子,这些算子其实都会产生shuffle操作,
+每一个父RDD的partition中的数据都可能会传输一部分到下一个RDD的每个partition中。
+此时就会出现,父RDD和子RDD的partition之间,具有错综复杂的关系,这种情况就叫做两个RDD 之间是宽依赖,
+同时,他们之间会发生shuffle操作。
+
+
+
+
 //算子
 转换算子
 	Value数据类型的Transformation算子，这种变换不触发提交作业，针对处理的数据项是Value型的数据。
@@ -223,6 +238,60 @@ rdd1.saveAsObjectFile("output1")
 foreach☆☆☆
 是对RDD中的每个元素执行无参数的f函数，返回Unit
 rdd1.map(num=>num).collect().foreach(println) 
+
+
+
+//题目
+////4.map和mappartitions的区别
+1、数据处理角度
+Map 算子是分区内一个数据一个数据的执行,类似于串行操作。而 mapPartitions 算子是以分区为单位进行批处理操作。
+2、 功能的角度
+Map 算子主要目的将数据源中的数据进行转换和改变。但是不会减少或增多数据。
+MapPartitions 算子需要传递一个迭代器,返回一个迭代器,没有要求的元素的个数保持不变,所以可以增加或减少数据。
+3、性能的角度
+Map 算子因为类似于串行操作,所以性能比较低,而是 mapPartitions 算子类似于批处理,所以性能较高。
+但是 mapPartitions 算子会长时间占用内存,那么这样会导致内存可能不够用,出现内存溢出的错误。
+所以在内存有限的情况下,不推荐使用 mapPartitions,可使用 map 操作。
+
+
+////3.Repartition和Coalesce关系与区别
+repartition和coalesce两个都是对RDD的分区进行重新划分,
+repartition只是coalesce接口中shuffle为true的简易实现。
+假设RDD有N个分区,需要重新划分成M个分区,有以下几种情况
+1.N小于M
+一般情况下,N个分区有数据分布不均匀的状况,利用hashPartitioner函数将数据重新分区为M个,
+这时需要将shuffle设置为true。
+2.N大于M且和M相差不多
+假如N是1000,M是100,那么久可以将N个分区中的若干个分区合并成一个新的分区,
+最终合并为M个分区,这时可以将shuffle设置为false,在shuffle为false的情况下,
+如果M>N时,coalesce为无效的,不进行shuffle过程,父RDD和子RDD之间是窄依赖关系。
+3.N大于M且和M相差悬殊
+这时如果将shuffle设置为false,父子RDD是窄依赖关系,他们同处在一个stage中,
+就可能造成spark程序的并行度不够,从而影响性能,如果在M为1的时候,
+为了时coalesce之前的操作有更好的并行度,可以将shuffle设置为true。
+总之,如果shuffle为false时,如果传入的参数大于现有的分区数目,RDD的分区数不变,
+就是说不经过shuffle,是无法将RDD的分区数变多的。
+
+
+////2.请列举Spark的action算子,并简述功能(5个以上)
+1.collect  :  将数据从各个Executor节点中收集到Driver端
+2.foreach : 分布式遍历RDD中数据
+3.count : 统计数RDD中据个数
+4.take :显示前N个RDD的元素
+5.saveAsTextFile : 将RDD数据保存到集群或者本地,文件格式为txt格式。
+6.reduce :指定聚合逻辑,对RDD所有元素进行聚合操作
+7.aggregare : 分别指定分区内与分区间聚合逻辑,对RDD所有元素进行聚合操作
+8. countByKey : 统计RDD中所有Key出现的次数
+9.countByvalue : 统计RDD中各个元素值出现的次数。
+
+////11.在RDD行动算子中,用于返回数组的第一个元素的行动算子为()
+A、first()
+
+////5. 下面哪个操作是窄依赖
+B. filter
+
+////6.下面哪个操作肯定是宽依赖
+C. reduceByKey
 
 
 
