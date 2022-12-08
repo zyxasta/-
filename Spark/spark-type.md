@@ -9,9 +9,7 @@
 
 
 
-12.在Spark2.0 版本之前,Spark SQL中创建DataFrame和执行SQL的入口是()
 
-C、SQLContext
 
 13.在DataFrame的操作中,用于实现对列名进行重命名的操作是()
 A、select()
@@ -21,7 +19,6 @@ A、select()
 
 
 
-//
 
 
 
@@ -29,21 +26,6 @@ A、select()
 
 
 
-
-
-
-17. SparkContext可以从哪些位置读取数据
-A.本地磁盘
-C.hdfs
-D.内存
-
-19. 要读取people.json文件生成DataFrame,可以使用下列那些命令
-A. spark.read.json("people.json")
-C. spark.read.format("json").load("people.json")
-
-20. 从RDD转换得到DataFrame包含两种典型的方法,分别是
-A.利用反射机制推断RDD模式
-B.使用编程方式定义RDD模式
 
 
 

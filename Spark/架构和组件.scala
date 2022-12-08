@@ -51,11 +51,52 @@ Hadoop 用户向 YARN 集群提交应用程序时,提交程序中应该包含App
 
 
 
+//
+SQLContext:spark SQL的入口点位 
+SparkContext:为Spark的主要入口点
+             SparkContext则是客户端的核心；如注释所说 SparkContext用于连接Spark集群、
+             创建RDD、累加器（accumlator）、广播变量（broadcast variables）
+
+
+//Spark on Yarn 的优势
+
+	部署Application和服务更加方便：只需要yarn服务，Spark应用程序不要要自带服务只需要经由客户端提交后，
+                                由yarn提供的分布式缓存机制分发到各个计算节点上。
+	资源隔离：yarn只负责资源的管理和调度，完全由用户和自己决定在yarn集群上运行哪种服务和Applicatioin，
+            所以在yarn上有可能同时运行多个同类的服务和Application。
+            Yarn利用Cgroups实现资源的隔离，用户在开发新的服务或者Application时，
+            不用担心资源隔离方面的问题。
+	资源弹性管理：Yarn可以通过队列的方式，管理同时运行在yarn集群种的多个服务，
+                可根据不同类型的应用程序压力情况，调整对应的资源使用量，实现资源弹性管理。
+
+
+
+
+
 //Spark on yarn client 和 spark on yarn cluster
 
 
 //Spark支持3种集群部署模式
 Standalone、Yarn、Mesos
+
+
+
+
+
+
+//核心概念
+应用 Application:使用 Spark 的 API 构建的基于 Spark 的用户程序。
+                它由一个驱动器程序和集群内的多个执行器组成。
+                
+SparkSession:SparkSession 对象提供与下层 Spark 功能交互的入口。
+             它允许用户用Spark 的 API 编写 Spark 程序。
+             在交互式 Spark shell 中，Spark 驱动器已经初始化了一个 SparkSession 对象，
+             但在 Spark 应用中，你需要自行创建SparkSession 对象。
+
+作业:由许多任务组成的并行计算，在调用 Spark 行动操作（如 save()、collect() 等）时生成。
+执行阶段：每个作业会被分为更小的任务集合，即执行阶段。执行阶段之间会存在依赖关系。
+任务：发送到 Spark 执行器上的具体工作的独立单元。
+
 
 
 
@@ -109,4 +150,15 @@ D. Local
 ////简述Spark的架构与作业提交流程
 1.Spark 部署方式
 主要是说明一下Spark 的架构,和Spark on yarn client 和 spark on yarn cluster的架构
+
+////12.在Spark2.0 版本之前,Spark SQL中创建DataFrame和执行SQL的入口是()
+C、SQLContext
+
+
+
+////17. SparkContext可以从哪些位置读取数据
+A.本地磁盘
+C.hdfs
+D.内存
+
 

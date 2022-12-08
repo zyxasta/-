@@ -1,7 +1,23 @@
 
 
-////rdd特点
+//rdd特点
 RDD:弹性分布式数据集 (Resilient Distributed DataSet)
+RDD 是一种抽象，是 Spark 对于分布式数据集的抽象，它用于囊括所有内存中和磁盘中的分布式数据实体。
+	弹性:
+ 	存储的弹性：内存与磁盘的自动切换
+ 	容错的弹性：数据丢失可以自动恢复
+ 	计算的弹性：计算出错重试机制
+ 	分片的弹性：可根据需要重新分片
+	分布式：数据存储在大数据集群不同节点上数据集：RDD 封装了计算逻辑，并不保存数据
+	数据抽象：RDD 是一个抽象类，需要子类具体实现
+	不可变：RDD 封装了计算逻辑，是不可以改变的，想要改变，只能产生新的RDD，在新的RDD 里面封装计算逻辑
+	可分区、并行计算
+
+
+
+
+
+特点：
 分区:每一个 RDD 包含的数据被存储在系统的不同节点上。
 逻辑上我们可以将 RDD 理解成一个大的数组,数组中的每个元素就代表一个分区 (Partition) 。
 在物理存储中,每个分区指向一个存储在内存或者硬盘中的数据块 (Block) ,
@@ -74,6 +90,32 @@ cache缓存不切断血缘关系,而checkepoint切断血缘关系。
 cache是缓存到内存中或者磁盘临时文件中,安全性低,checkpoint是持久化到高可用的分布式文件系统或者本地,安全性高。
 cache缓存的是当前RDD已经计算出的结果,而checkpoint为了保证数据的准确性,会从头开始计算得到结果后再缓存,
 也就是说cache时RDD链只计算一次,而checkpoint时RDD链需要计算两次。
+
+
+
+//RDD创建
+////1:从集合中创建RDD，Spark 主要提供了两个方法：parallelize 和 makeRDD
+val sparkConf =  new SparkConf().setMaster("local[*]").setAppName("spark") 
+val sparkContext = new SparkContext(sparkConf)  
+val rdd1 = sparkContext.parallelize( List(1,2,3,4))  
+val rdd2 = sparkContext.makeRDD( List(1,2,3,4))  
+
+////2:从外部存储（文件）创建RDD
+由外部存储系统的数据集创建RDD 包括：本地的文件系统，所有Hadoop 支持的数据集， 比如HDFS、HBase 等。
+val sparkConf =  new SparkConf().setMaster("local[*]").setAppName("spark") 
+val sparkContext = new SparkContext(sparkConf)  
+val fileRDD: RDD[String] = sparkContext.textFile("input") 
+fileRDD.collect().foreach(println)  
+sparkContext.stop()
+
+////3:从其他RDD创建
+////4:直接创建RDD(new) ：使用 new 的方式直接构造RDD，一般由Spark 框架自身使用
+
+
+
+
+
+
 
 
 
