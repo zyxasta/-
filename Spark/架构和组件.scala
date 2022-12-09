@@ -52,7 +52,7 @@ Hadoop 用户向 YARN 集群提交应用程序时,提交程序中应该包含App
 
 
 //
-SQLContext:spark SQL的入口点位 
+SQLContext:2.0前, 创建 DataFrame 和执行 SQL 的入口
 SparkContext:为Spark的主要入口点
              SparkContext则是客户端的核心；如注释所说 SparkContext用于连接Spark集群、
              创建RDD、累加器（accumlator）、广播变量（broadcast variables）
