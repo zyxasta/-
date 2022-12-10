@@ -1,8 +1,6 @@
 
-////由range生成Dataset
-//spark.range(5, 100, 5)  5 10 15 20.........95
-//numDS :DataSet[Long]
-val numDS = spark.range(5, 100, 5)
+//由range生成Dataset
+val numDS = spark.range(5, 100, 5)  //5 10 15 20.........95  numDS :DataSet[Long]
 // orderBy 转换操作；desc:function；show:Action 
 numDS.orderBy(desc("id")).show(5)
 // 统计信息： 返回count mean stddev min max信息
@@ -64,8 +62,6 @@ val schema1 = (new StructType).
 // RDD => DataFrame，要指明schema 
 val rddToDF = spark.createDataFrame(rdd1, schema)
 rddToDF.orderBy(desc("name")).show(false)
-
-
 
 
 // IDEA中需要，spark-shell中不需要 
@@ -884,5 +880,10 @@ object TypeSafeUDAFTest {
 }
 
 
+Spark SQL 的创建
+
+df.createTempView
+df.createOrReplaceTempView
+spark.sql("SQL") 
 
 
