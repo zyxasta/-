@@ -70,7 +70,8 @@ wordToOneRdd.checkpoint()
 缓存和检查点区别
 	Cache 缓存只是将数据保存起来,不切断血缘依赖。Checkpoint 检查点切断血缘依赖。
 	Cache 缓存的数据通常存储在磁盘、内存等地方,可靠性低。Checkpoint 的数据通常存储在HDFS 等容错、高可用的文件系统,可靠性高。
-	建议对checkpoint()的RDD 使用Cache 缓存,这样 checkpoint 的 job 只需从 Cache 缓存中读取数据即可,否则需要再从头计算一次RDD。
+	建议对checkpoint()的RDD 使用Cache 缓存,这样 checkpoint 的 job 只需从 Cache 缓存中读取数据即可,
+    否则需要再从头计算一次RDD。  见93行
 18.RDD有哪些缺陷?
 A. 不支持细粒度的写和更新操作(如网络爬虫)
 D. 不支持增量迭代计算

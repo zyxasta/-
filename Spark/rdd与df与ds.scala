@@ -5,40 +5,41 @@
 //rdd
 
 //DataFrame:
-	DataFrame可以看做分布式 Row 对象的集合，提供了由列组成的详细模式信息，使其可以得到优化。
-              DataFrame 不仅有比RDD更多的算子，还可以进行执行计划的优化
-	DataFrame更像传统数据库的二维表格，除了数据以外，还记录数据的结构信息，即schema
-	DataFrame也支持嵌套数据类型（struct、 array和map）
-	DataFrame API提供的是一套高层的关系操作，比函数式的RDD API要更加友好，门槛更低
-	Dataframe的劣势在于在编译期缺少类型安全检查，导致运行时出错
+	DataFrame可以看做分布式 Row 对象的集合,提供了由列组成的详细模式信息,使其可以得到优化。
+              DataFrame 不仅有比RDD更多的算子,还可以进行执行计划的优化
+	DataFrame更像传统数据库的二维表格,除了数据以外,还记录数据的结构信息,即schema
+	DataFrame也支持嵌套数据类型(struct、 array和map)
+	DataFrame API提供的是一套高层的关系操作,比函数式的RDD API要更加友好,门槛更低
+	Dataframe的劣势在于在编译期缺少类型安全检查,导致运行时出错
 
 ////schema:
-DataFrame中提供了详细的数据结构信息，从而使得SparkSQL可以清楚地知道该数据集中包含哪些列，
-每列的名称和类型各是什么，DataFrame中的数据结构信息，即为schema。
+DataFrame中提供了详细的数据结构信息,从而使得SparkSQL可以清楚地知道该数据集中包含哪些列,
+每列的名称和类型各是什么,DataFrame中的数据结构信息,即为schema。
 
 
 //DataSet:DataSet会逐步取代 RDD 和 DataFrame 成为唯一的API接口。
 
-1:与RDD相比，保存了更多的描述信息，概念上等同于关系型数据库中的二维表；
-2:与DataFrame相比，保存了类型信息，是强类型的，提供了编译时类型检查；
-3:调用Dataset的方法先会生成逻辑计划，然后Spark的优化器进行优化，最终生成物理计划，然后提交到集群中运行。
-4:DataSet包含了DataFrame的功能，在Spark2.0中两者得到了统一：  DataFrame表示 为DataSet[Row]，即DataSet的子集。
+1:与RDD相比,保存了更多的描述信息,概念上等同于关系型数据库中的二维表
+2:与DataFrame相比,保存了类型信息,是强类型的,提供了编译时类型检查；
+3:调用Dataset的方法先会生成逻辑计划,然后Spark的优化器进行优化,最终生成物理计划,然后提交到集群中运行。
+4:DataSet包含了DataFrame的功能,在Spark2.0中两者得到了统一：  DataFrame表示 为DataSet[Row],即DataSet的子集。
                                                              Row是一个泛化的无类型 JVM object 
 
 ////三者的共性：
-	RDD、DataFrame、Dataset都是 Spark 平台下的分布式弹性数据集，为处理海量数据提供便利 
-	三者都有许多相同的概念，如分区、持久化、容错等；有许多共同的函数，如map、filter，sortBy等 
-	三者都有惰性机制，只有在遇到 Action 算子时，才会开始真正的计算 
-	对DataFrame和Dataset进行操作许多操作都需要这个包进行支持，import spark.implicits._ 
+	RDD、DataFrame、Dataset都是 Spark 平台下的分布式弹性数据集,为处理海量数据提供便利 
+	三者都有许多相同的概念,如分区、持久化、容错等；有许多共同的函数,如map、filter,sortBy等 
+	三者都有惰性机制,只有在遇到 Action 算子时,才会开始真正的计算 
+	对DataFrame和Dataset进行操作许多操作都需要这个包进行支持,import spark.implicits._ 
 
 ////三者的区别：
 DataSet(DataFrame = RDD[Row] + Schema): 
-	与RDD和Dataset不同，DataFrame每一行的类型固定为Row，只有通过解析才能获取各个字段的值 
+	与RDD和Dataset不同,DataFrame每一行的类型固定为Row,只有通过解析才能获取各个字段的值 
 	DataFrame与Dataset均支持 SparkSQL 的操作 
-Dataset(Dataset = RDD[case class].toDS): 
-	Dataset和DataFrame拥有完全相同的成员函数，区别只是每一行的数据类型不同； 
-	DataFrame 定义为 Dataset[Row]。每一行的类型是Row，每一行究竟有哪些字段，各个字段又是什么类型都无从得知，只能用前面提到的getAS方法或者模式匹配拿出特定字段； 
-	Dataset每一行的类型都是一个case class，在自定义了case class之后可以很自由的获得每一行的信息；
+   Dataset(Dataset = RDD[case class].toDS)
+	Dataset和DataFrame拥有完全相同的成员函数,区别只是每一行的数据类型不同
+	DataFrame 定义为 Dataset[Row]。每一行的类型是Row,每一行究竟有哪些字段,各个字段又是什么类型都无从得知,
+                      只能用前面提到的getAS方法或者模式匹配拿出特定字段
+	Dataset每一行的类型都是一个case class,在自定义了case class之后可以很自由的获得每一行的信息
 
 Spark SQL的数据类型
 https://spark.apache.org/docs/latest/sql-ref-datatypes.html
@@ -46,14 +47,14 @@ https://spark.apache.org/docs/latest/sql-ref-datatypes.html
 
 在 Spark 2.0 之前： 
 SQLContext 是创建 DataFrame 和执行 SQL 的入口 
-HiveContext通过Hive sql语句操作Hive数据，兼Hhive操作，HiveContext继承自SQLContext
+HiveContext通过Hive sql语句操作Hive数据,兼Hhive操作,HiveContext继承自SQLContext
  
 在 Spark 2.0 之后： 
-将这些入口点统一到了SparkSession，SparkSession 封装了 SqlContext 及 HiveContext，
-实现了 SQLContext 及 HiveContext 所有功能，通过SparkSession可以获取到SparkConetxt；
+将这些入口点统一到了SparkSession,SparkSession 封装了 SqlContext 及 HiveContext,
+实现了 SQLContext 及 HiveContext 所有功能,通过SparkSession可以获取到SparkConetxt
 
 //创建
-不要刻意区分：DF、DS。DF是一种特殊的DS
+不要刻意区分:DF、DS。DF是一种特殊的DS
 ds.transformation => df 
 //创建ds
 1:val numDS = spark.range(5, 100, 5)
@@ -74,7 +75,7 @@ val df1 = spark.createDataFrame(lst).
   withColumnRenamed("_2", "age1").
   withColumnRenamed("_3", "height1")
 df1.orderBy("age1").show(10)
-// desc是函数，在IDEA中使用是需要导包 
+// desc是函数,在IDEA中使用是需要导包 
 
 import org.apache.spark.sql.functions._
 
@@ -97,11 +98,11 @@ val schema = StructType( StructField("name", StringType,false) ::
   StructField("height", IntegerType, false) ::
   Nil)
 val schema1 = (new StructType).add("name", "string", false).add("age", "int", false).add("height", "int", false)
-// RDD => DataFrame，要指明schema 
+// RDD => DataFrame,要指明schema 
 val rddToDF = spark.createDataFrame(rdd1, schema)   //rdd  to   df
 rddToDF.orderBy(desc("name")).show(false)
 
-// IDEA中需要，spark-shell中不需要 
+// IDEA中需要,spark-shell中不需要 
 import spark.implicits._
 val arr2 = Array(("Jack", 28, 150), ("Tom", 10, 144), ("Andy",
   16, 165))
@@ -112,7 +113,7 @@ val arr2 = Array(("Jack", 28, 150), ("Tom", 10, 144), ("Andy",
 val rdd2: RDD[Person] =
   spark.sparkContext.makeRDD(arr2).map(f=>Person(f._1, f._2,
     f._3))
-val ds2 = rdd2.toDS() // 反射推断，spark 通过反射从case 
+val ds2 = rdd2.toDS() // 反射推断,spark 通过反射从case 
 val df2 = rdd2.toDF() // 反射推断 rdd to  df
 
 
@@ -121,7 +122,7 @@ val df2 = rdd2.toDF() // 反射推断 rdd to  df
 Dataset = RDD[case class] 
 DataFrame = RDD[Row] + Schema
 val ds3 = spark.createDataset(rdd2)
-val ds2 = rdd2.toDS() // 反射推断，spark 通过反射从case 
+val ds2 = rdd2.toDS() // 反射推断,spark 通过反射从case 
 
 //从文件创建DateFrame
 val df1 = spark.read.csv("data/people1.csv")
@@ -151,11 +152,11 @@ df4.show
 //三者的转换
 rdd <-> df
   rdd -> df :1 createDataFrame(rdd,schema)  2:rdd.toDF
-  DF -> RDD: 直接转调用rdd
+  DF -> RDD: 直接转调用rdd df.rdd
 
 rdd <-> ds
   rdd -> ds :指定case class 调用 toDS
-  ds -> RDD: 直接转调用rdd 
+  ds -> RDD: 直接转调用rdd  ds.rdd
 df <-> ds
   df -> ds 指定case class 调用as[case class]
   df <- ds 直接转,调用toDF

@@ -5,13 +5,14 @@
 累加器
 
 累加器用来把Executor 端变量信息聚合到Driver 端。
-在Driver 程序中定义的变量，在Executor 端的每个Task 都会得到这个变量的一份新的副本，
+在Driver 程序中定义的变量,在Executor 端的每个Task 都会得到这个变量的一份新的副本，
 每个 task 更新这些副本的值后， 传回Driver 端进行 merge。
 
 1:系统累加器
 val rdd = sc.makeRDD(List(1,2,3,4,5))  
 // 声明累加器  
-var sum = sc.longAccumulator("sum"); rdd.foreach(  
+var sum = sc.longAccumulator("sum")
+rdd.foreach(  
 num => {  
 // 使用累加器  
 sum.add(num)  
@@ -94,5 +95,6 @@ num2 = v
 它的用途是:在join时,可以将小表作为广播变量发送到各个Executor中,然后与大表的数据进行本地map join,从而使得执行性能提升。
 
 累加器:共享只写变量
-其原理是:在Driver端定义一个累加器,然后累加器制作副本发送到各个Executor内存中,然后经过计算之后得到一个中间结果,多个Executor端将中间结果返回给Driver端,进行最终聚合操作。
+其原理是:在Driver端定义一个累加器,然后累加器制作副本发送到各个Executor内存中,然后经过计算之后得到一个中间结果,
+多个Executor端将中间结果返回给Driver端,进行最终聚合操作。
 它的用途:可用于在不同节点之间进行累加计算,例如求和操作。

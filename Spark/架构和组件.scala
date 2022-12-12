@@ -74,7 +74,8 @@ SparkContext:为Spark的主要入口点
 
 
 //Spark on yarn client 和 spark on yarn cluster
-
+区别主要在 driver驱动器 ，客户端模式： 在客户端内运行，不属于集群的一部分
+                    服务端：在yarn的应用容器内运行
 
 //Spark支持3种集群部署模式
 Standalone、Yarn、Mesos
